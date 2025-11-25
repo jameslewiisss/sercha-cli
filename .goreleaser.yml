@@ -63,35 +63,6 @@ archives:
       - LICENSE
       - README.md
 
-# Code signing configuration - uncomment when ready
-# signs:
-#   - id: macos
-#     ids:
-#       - darwin-amd64
-#       - darwin-arm64
-#     signature: "${artifact}.sig"
-#     cmd: codesign
-#     args:
-#       - --sign
-#       - "Developer ID Application: YOUR_TEAM_NAME"
-#       - --timestamp
-#       - --options
-#       - runtime
-#       - --entitlements
-#       - signing/entitlements.plist
-#       - --verbose
-#       - "${artifact}"
-#     artifacts: binary
-
-# Notarization configuration - uncomment when ready
-# notarize:
-#   macos:
-#     enabled: true
-#     sign: macos
-#     ids:
-#       - darwin-amd64
-#       - darwin-arm64
-
 homebrew_casks:
   - name: sercha
     repository:
@@ -100,7 +71,7 @@ homebrew_casks:
       token: "{{ .Env.HOMEBREW_GITHUB_TOKEN }}"
     commit_author:
       name: "Sercha Bot"
-      email: "bot@custodialabs.com"
+      email: "gurushey.deo@custodialabs.com"
     description: "Sercha CLI"
     homepage: "https://github.com/custodia-labs/sercha-cli"
     binaries:
@@ -109,7 +80,7 @@ homebrew_casks:
 nfpms:
   - id: deb_pkgs
     package_name: sercha
-    maintainer: "Gurushey Deo <you@example.com>"
+    maintainer: "Gurushey Deo <gurushey.deo@custodialabs.com>"
     description: "Sercha CLI"
     homepage: "https://github.com/custodia-labs/sercha-cli"
     license: MIT
@@ -118,7 +89,7 @@ nfpms:
 
   - id: rpm_pkgs
     package_name: sercha
-    maintainer: "Gurushey Deo <you@example.com>"
+    maintainer: "Gurushey Deo <gurushey.deo@custodialabs.com>"
     description: "Sercha CLI"
     homepage: "https://github.com/custodia-labs/sercha-cli"
     license: MIT
@@ -126,9 +97,15 @@ nfpms:
     bindir: /usr/bin
 
 publishers:
-  - name: upload-deb-to-cloudsmith
+  - name: upload-deb-jammy
     ids: [deb_pkgs]
     cmd: cloudsmith push deb custodia-labs/sercha/ubuntu/jammy {{ .ArtifactPath }}
+    env:
+      - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
+
+  - name: upload-deb-noble
+    ids: [deb_pkgs]
+    cmd: cloudsmith push deb custodia-labs/sercha/ubuntu/noble {{ .ArtifactPath }}
     env:
       - CLOUDSMITH_API_KEY={{ .Env.CLOUDSMITH_API_KEY }}
 
