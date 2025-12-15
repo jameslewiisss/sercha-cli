@@ -3,11 +3,16 @@ package services
 import (
 	"context"
 
+	"github.com/custodia-labs/sercha-cli/internal/connectors/dropbox"
 	"github.com/custodia-labs/sercha-cli/internal/connectors/filesystem"
 	"github.com/custodia-labs/sercha-cli/internal/connectors/github"
 	"github.com/custodia-labs/sercha-cli/internal/connectors/google/calendar"
 	"github.com/custodia-labs/sercha-cli/internal/connectors/google/drive"
 	"github.com/custodia-labs/sercha-cli/internal/connectors/google/gmail"
+	mscalendar "github.com/custodia-labs/sercha-cli/internal/connectors/microsoft/calendar"
+	"github.com/custodia-labs/sercha-cli/internal/connectors/microsoft/onedrive"
+	"github.com/custodia-labs/sercha-cli/internal/connectors/microsoft/outlook"
+	"github.com/custodia-labs/sercha-cli/internal/connectors/notion"
 	"github.com/custodia-labs/sercha-cli/internal/core/domain"
 	"github.com/custodia-labs/sercha-cli/internal/core/ports/driven"
 	"github.com/custodia-labs/sercha-cli/internal/core/ports/driving"
@@ -38,6 +43,11 @@ func (r *ConnectorRegistry) registerBuiltinConnectors() {
 	r.registerGoogleDrive()
 	r.registerGmail()
 	r.registerGoogleCalendar()
+	r.registerOutlook()
+	r.registerOneDrive()
+	r.registerMicrosoftCalendar()
+	r.registerDropbox()
+	r.registerNotion()
 }
 
 func (r *ConnectorRegistry) registerFilesystem() {
@@ -197,11 +207,172 @@ func calendarConfigKeys() []domain.ConfigKey {
 	}
 }
 
+func (r *ConnectorRegistry) registerOutlook() {
+	r.connectors["outlook"] = domain.ConnectorType{
+		ID:             "outlook",
+		Name:           "Outlook",
+		Description:    "Index emails from Microsoft Outlook",
+		ProviderType:   domain.ProviderMicrosoft,
+		AuthCapability: domain.AuthCapOAuth,
+		AuthMethod:     domain.AuthMethodOAuth,
+		ConfigKeys:     outlookConfigKeys(),
+		WebURLResolver: outlook.ResolveWebURL,
+	}
+}
+
+func outlookConfigKeys() []domain.ConfigKey {
+	return []domain.ConfigKey{
+		{
+			Key:         "folder_ids",
+			Label:       "Folder IDs",
+			Description: "Folder IDs to sync (optional, defaults to Inbox)",
+		},
+		{
+			Key:         "query",
+			Label:       "Search Query",
+			Description: "OData filter query to filter emails",
+		},
+	}
+}
+
+func (r *ConnectorRegistry) registerOneDrive() {
+	r.connectors["onedrive"] = domain.ConnectorType{
+		ID:             "onedrive",
+		Name:           "OneDrive",
+		Description:    "Index files from Microsoft OneDrive",
+		ProviderType:   domain.ProviderMicrosoft,
+		AuthCapability: domain.AuthCapOAuth,
+		AuthMethod:     domain.AuthMethodOAuth,
+		ConfigKeys:     onedriveConfigKeys(),
+		WebURLResolver: onedrive.ResolveWebURL,
+	}
+}
+
+func onedriveConfigKeys() []domain.ConfigKey {
+	return []domain.ConfigKey{
+		{
+			Key:         "folder_path",
+			Label:       "Folder Path",
+			Description: "Path to folder to sync (optional, defaults to root)",
+		},
+	}
+}
+
+func (r *ConnectorRegistry) registerMicrosoftCalendar() {
+	r.connectors["microsoft-calendar"] = domain.ConnectorType{
+		ID:             "microsoft-calendar",
+		Name:           "Microsoft Calendar",
+		Description:    "Index events from Microsoft Calendar",
+		ProviderType:   domain.ProviderMicrosoft,
+		AuthCapability: domain.AuthCapOAuth,
+		AuthMethod:     domain.AuthMethodOAuth,
+		ConfigKeys:     msCalendarConfigKeys(),
+		WebURLResolver: mscalendar.ResolveWebURL,
+	}
+}
+
+func msCalendarConfigKeys() []domain.ConfigKey {
+	return []domain.ConfigKey{
+		{
+			Key:         "calendar_ids",
+			Label:       "Calendar IDs",
+			Description: "Specific calendar IDs to sync (optional)",
+		},
+	}
+}
+
+func (r *ConnectorRegistry) registerDropbox() {
+	r.connectors["dropbox"] = domain.ConnectorType{
+		ID:             "dropbox",
+		Name:           "Dropbox",
+		Description:    "Index files from Dropbox",
+		ProviderType:   domain.ProviderDropbox,
+		AuthCapability: domain.AuthCapOAuth,
+		AuthMethod:     domain.AuthMethodOAuth,
+		ConfigKeys:     dropboxConfigKeys(),
+		WebURLResolver: dropbox.ResolveWebURL,
+	}
+}
+
+func dropboxConfigKeys() []domain.ConfigKey {
+	return []domain.ConfigKey{
+		{
+			Key:         "folder_path",
+			Label:       "Folder Path",
+			Description: "Root folder path to sync (optional, defaults to root)",
+		},
+		{
+			Key:         "recursive",
+			Label:       "Recursive",
+			Description: "Include subfolders (true/false)",
+			Default:     "true",
+		},
+		{
+			Key:         "mime_types",
+			Label:       "MIME Types",
+			Description: "Filter by MIME types (optional)",
+		},
+	}
+}
+
+func (r *ConnectorRegistry) registerNotion() {
+	r.connectors["notion"] = domain.ConnectorType{
+		ID:             "notion",
+		Name:           "Notion",
+		Description:    "Index pages and databases from Notion",
+		ProviderType:   domain.ProviderNotion,
+		AuthCapability: domain.AuthCapOAuth,
+		AuthMethod:     domain.AuthMethodOAuth,
+		ConfigKeys:     notionConfigKeys(),
+		WebURLResolver: notion.ResolveWebURL,
+	}
+}
+
+func notionConfigKeys() []domain.ConfigKey {
+	return []domain.ConfigKey{
+		{
+			Key:         "include_comments",
+			Label:       "Include Comments",
+			Description: "Fetch page comments (true/false)",
+			Default:     "true",
+		},
+		{
+			Key:         "content_types",
+			Label:       "Content Types",
+			Description: "Content to sync: pages,databases",
+			Default:     "pages,databases",
+		},
+		{
+			Key:         "max_block_depth",
+			Label:       "Max Block Depth",
+			Description: "Maximum depth for recursive block fetching",
+			Default:     "10",
+		},
+		{
+			Key:         "page_size",
+			Label:       "Page Size",
+			Description: "Items per API page (max: 100)",
+			Default:     "100",
+		},
+	}
+}
+
 // List returns all available connector types.
 func (r *ConnectorRegistry) List() []domain.ConnectorType {
 	result := make([]domain.ConnectorType, 0, len(r.connectors))
 	for _, c := range r.connectors {
 		result = append(result, c)
+	}
+	return result
+}
+
+// GetConnectorsForProvider returns all connector types for a given provider.
+func (r *ConnectorRegistry) GetConnectorsForProvider(provider domain.ProviderType) []domain.ConnectorType {
+	var result []domain.ConnectorType
+	for _, c := range r.connectors {
+		if c.ProviderType == provider {
+			result = append(result, c)
+		}
 	}
 	return result
 }
@@ -289,4 +460,17 @@ func (r *ConnectorRegistry) GetSetupHint(connectorType string) string {
 		return ""
 	}
 	return r.connectorFactory.GetSetupHint(connectorType)
+}
+
+// ExchangeCode exchanges an authorization code for tokens using connector-specific logic.
+func (r *ConnectorRegistry) ExchangeCode(
+	ctx context.Context,
+	connectorType string,
+	authProvider *domain.AuthProvider,
+	code, redirectURI, codeVerifier string,
+) (*domain.OAuthToken, error) {
+	if r.connectorFactory == nil {
+		return nil, domain.ErrNotFound
+	}
+	return r.connectorFactory.ExchangeCode(ctx, connectorType, authProvider, code, redirectURI, codeVerifier)
 }

@@ -14,4 +14,8 @@ const (
 	ProviderSlack ProviderType = "slack"
 	// ProviderNotion is for Notion workspaces.
 	ProviderNotion ProviderType = "notion"
+	// ProviderMicrosoft is for Microsoft 365 services (Outlook, OneDrive, Calendar).
+	ProviderMicrosoft ProviderType = "microsoft"
+	// ProviderDropbox is for Dropbox file storage.
+	ProviderDropbox ProviderType = "dropbox"
 )

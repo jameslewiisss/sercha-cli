@@ -9,9 +9,11 @@ require (
 	github.com/charmbracelet/bubbles v0.21.0
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/lipgloss v1.1.0
+	github.com/dropbox/dropbox-sdk-go-unofficial/v6 v6.0.5
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/google/go-github/v80 v80.0.0
 	github.com/google/uuid v1.6.0
+	github.com/jomei/notionapi v1.13.3
 	github.com/modelcontextprotocol/go-sdk v1.1.0
 	github.com/pelletier/go-toml/v2 v2.2.4
 	github.com/stretchr/testify v1.11.1

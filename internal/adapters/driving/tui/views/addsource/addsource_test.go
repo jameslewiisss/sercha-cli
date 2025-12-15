@@ -164,6 +164,20 @@ func (m *MockConnectorRegistry) GetSetupHint(connectorType string) string {
 	return ""
 }
 
+func (m *MockConnectorRegistry) GetConnectorsForProvider(provider domain.ProviderType) []domain.ConnectorType {
+	var result []domain.ConnectorType
+	for _, c := range m.List() {
+		if c.ProviderType == provider {
+			result = append(result, c)
+		}
+	}
+	return result
+}
+
+func (m *MockConnectorRegistry) ExchangeCode(_ context.Context, _ string, _ *domain.AuthProvider, _, _, _ string) (*domain.OAuthToken, error) {
+	return nil, nil
+}
+
 // MockCredentialsService implements driving.CredentialsService for testing.
 type MockCredentialsService struct {
 	SaveFunc          func(ctx context.Context, creds domain.Credentials) error

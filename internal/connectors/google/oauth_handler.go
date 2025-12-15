@@ -35,11 +35,17 @@ func (h *OAuthHandler) BuildAuthURL(
 		authURL = defaultAuthURL
 	}
 
+	// Use default scopes if none configured
+	scopes := cfg.Scopes
+	if len(scopes) == 0 {
+		scopes = defaultScopes
+	}
+
 	params := url.Values{
 		"client_id":             {cfg.ClientID},
 		"redirect_uri":          {redirectURI},
 		"response_type":         {"code"},
-		"scope":                 {strings.Join(cfg.Scopes, " ")},
+		"scope":                 {strings.Join(scopes, " ")},
 		"state":                 {state},
 		"code_challenge":        {codeChallenge},
 		"code_challenge_method": {"S256"},
