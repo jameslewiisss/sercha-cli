@@ -32,60 +32,43 @@ type Connector struct {
 }
 
 func New(sourceID, rootPath string) *Connector {
-	// Reject empty / whitespace-only paths
-	if strings.TrimSpace(rootPath) == "" {
-		fmt.Println("Error: filesystem connector root path is empty.")
+	fail := func(msg string) *Connector {
+		fmt.Println("Error:", msg)
 		fmt.Println("Please provide a valid directory path and retry.")
-
 		return &Connector{
 			sourceID: sourceID,
 			rootPath: "",
 		}
 	}
 
-	// Expand "~" to home directory
-	if rootPath == "~" {
-		if home, err := os.UserHomeDir(); err == nil {
+	rootPath = strings.TrimSpace(rootPath)
+	if rootPath == "" {
+		return fail("filesystem connector root path is empty")
+	}
+
+	// Expand "~"
+	if rootPath == "~" || strings.HasPrefix(rootPath, "~/") {
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return fail("failed to resolve home directory")
+		}
+
+		if rootPath == "~" {
 			rootPath = home
 		} else {
-			fmt.Println("Error: failed to resolve home directory.")
-			fmt.Println("Please retry with an explicit path.")
-
-			return &Connector{
-				sourceID: sourceID,
-				rootPath: "",
-			}
-		}
-	} else if strings.HasPrefix(rootPath, "~/") {
-		if home, err := os.UserHomeDir(); err == nil {
 			rootPath = filepath.Join(home, rootPath[2:])
-		} else {
-			fmt.Println("Error: failed to resolve home directory.")
-			fmt.Println("Please retry with an explicit path.")
-
-			return &Connector{
-				sourceID: sourceID,
-				rootPath: "",
-			}
 		}
 	}
 
 	// Convert to absolute path and clean
-	if absPath, err := filepath.Abs(rootPath); err == nil {
-		rootPath = filepath.Clean(absPath)
-	} else {
-		fmt.Printf("Error: invalid root path %q\n", rootPath)
-		fmt.Println("Please provide a valid directory path and retry.")
-
-		return &Connector{
-			sourceID: sourceID,
-			rootPath: "",
-		}
+	absPath, err := filepath.Abs(rootPath)
+	if err != nil {
+		return fail(fmt.Sprintf("invalid root path %q", rootPath))
 	}
 
 	return &Connector{
 		sourceID: sourceID,
-		rootPath: rootPath,
+		rootPath: filepath.Clean(absPath),
 	}
 }
 
